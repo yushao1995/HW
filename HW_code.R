@@ -97,6 +97,14 @@ gg_miss_var(testset) + labs(y = "Look at all the missing ones")
 library(visdat)
 vis_miss(testset)
 
+missing=colMeans(is.na(insurance_t))
+datasummary["missing"] <- NA
+datasummary$missing <- missing
+binmiss=subset(datasummary,type=="bin")
+commiss=subset(datasummary,type=="con")
+
+
+
 # 4.2 Data Consideration_redundant information
 # 4.3 Interestingfindings
 
