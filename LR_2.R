@@ -1,5 +1,3 @@
-newdata <- na.omit(insurance_t_bin)
-
 library(tidyr)
 library(dplyr)
 library(ggplot2)
@@ -112,4 +110,9 @@ data = insurance_t_bin, family = binomial(link = "logit"))
 qchisq(0.002,1,lower.tail=FALSE)
 
 back.model <- step(full.model, direction = "backward", k=9.549536)
+
+int.model <- step(back.model, scope = . ~ .^2, direction = 'forward', k=9.549536)
+
+
+
 
