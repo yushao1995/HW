@@ -4,6 +4,8 @@ library(ggplot2)
 
 
 # Step 0: Looking at missing pattern
+miss=na.omit(insurance_t_bin)
+
 missing.values <- insurance_t_bin %>%
   gather(key = "key", value = "val") %>%
   mutate(is.missing = is.na(val)) %>%
@@ -80,14 +82,8 @@ for (i in seq_along(insurance_t_bin)){
 insurance_t_bin$CASHBK[insurance_t_bin$CASHBK==2]=1
 table(insurance_t_bin[["CASHBK"]],insurance_t_bin[["INS"]])
 
-insurance_t_bin$MMCRED[insurance_t_bin$MMCRED==3]=2
-insurance_t_bin$MMCRED[insurance_t_bin$MMCRED==5]=2
+insurance_t_bin$MMCRED[insurance_t_bin$MMCRED==5]=3
 table(insurance_t_bin[["MMCRED"]],insurance_t_bin[["INS"]])
-
-insurance_t_bin$CCPURC[insurance_t_bin$CCPURC==3]=2
-insurance_t_bin$CCPURC[insurance_t_bin$CCPURC==4]=2
-table(insurance_t_bin[["CCPURC"]],insurance_t_bin[["INS"]])
-
 
 # This is optional
 # Look at whether variables are binary or catagorical
@@ -127,6 +123,15 @@ back.model <- step(full.model, direction = "backward", k=9.549536)
 # Step 6: Model with interaction
 int.model <- step(back.model, scope = . ~ .^2, direction = 'forward', k=9.549536)
 
+# Step 7: P-values
+main=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+  factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+  factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+main_r=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(CC) + 
+             factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+             factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+anova(main,main_r,test="LRT")
 
+summary(main)
 
 

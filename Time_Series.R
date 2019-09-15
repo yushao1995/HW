@@ -26,8 +26,33 @@ hw=pm %>% group_by(month=floor_date(Date, "month")) %>%
 ts <- ts(hw$amount, start = 2014, frequency =12)
 
 # Time Series Decomposition ...STL#
+
+#stl
 decomp_stl <- stl(ts, s.window = 7)
-plot(decomp_stl)
+
+#get each element
+seasonal   <- decomp_stl$time.series[,1]
+trend	   <- decomp_stl$time.series[,2]
+remainder  <- decomp_stl$time.series[,3]
+
+
+trend=subset(trend,end=length(trend)-6)
+
+plot(trend+remainder,
+     main="Widget Sales over Time, Seasonally Adjusted",
+     ylab="Sales (USD)")
+lines(ts,col="green")
+
+
+#overlaid plot
+#this might be seasonally adjusted I guess
+#first use plot
+plot(trend+remainder,
+     main="Widget Sales over Time, Seasonally Adjusted",
+     ylab="Sales (USD)")
+#second use line to add another line on plot
+lines(ts,col="green")
+
 
 
 training=subset(ts,end=length(ts)-6)
@@ -40,6 +65,20 @@ error=test-test.results$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(test))
 print(MAPE)
+
+predict=SES[["mean"]]
+
+
+
+plot(test, ylab="Particulate Matter",main="Particulate Matter with Predicted Values")
+#second use line to add another line on plot
+lines(predict,col="darkturquoise")
+legend(x=2018.52,y=12.2,c("Actual","Predicted"),cex=0.7,col=c("black","darkturquoise"),pch=c(1,1))
+
+
+
+legend("bottomright", inset=.02,
+       c("real","predicted"), fill=c("black","darkturquoise"), horiz=TRUE, cex=0.8)
 
 # Building a Linear Exponential Smoothing Model
 LES <- holt(training, initial = "optimal", h = 6)
