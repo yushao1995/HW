@@ -37,11 +37,30 @@ remainder  <- decomp_stl$time.series[,3]
 
 
 trend=subset(trend,end=length(trend)-6)
+remainder=subset(remainder,end=length(remainder)-6)
 
-plot(trend+remainder,
-     main="Widget Sales over Time, Seasonally Adjusted",
-     ylab="Sales (USD)")
-lines(ts,col="green")
+plot(training,
+     main="Particulate Matter with Trend",
+     ylab="Particulate Matter")
+lines(trend,col="blue")
+legend(x=2017.3,y=13,c("Actual","Trend"),cex=0.7,col=c("black","blue"),pch=c(1,1))
+
+
+
+plot(test, ylab="Particulate Matter",main="Particulate Matter with Predicted Values")
+#second use line to add another line on plot
+lines(predict,col="darkturquoise")
+legend(x=2018.52,y=12.2,c("Actual","Predicted"),cex=0.7,col=c("black","darkturquoise"),pch=c(1,1))
+
+
+
+
+
+
+
+
+
+
 
 
 #overlaid plot

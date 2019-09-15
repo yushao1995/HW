@@ -124,14 +124,167 @@ back.model <- step(full.model, direction = "backward", k=9.549536)
 int.model <- step(back.model, scope = . ~ .^2, direction = 'forward', k=9.549536)
 
 # Step 7: P-values
+# Main
 main=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
   factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
   factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
-main_r=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(CC) + 
+
+main_DDA=glm(INS ~  NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_NSF=glm(INS ~ DDA +  IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_IRA=glm(INS ~ DDA + NSF + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_ILS=glm(INS ~ DDA + NSF + IRA + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_MM=glm(INS ~ DDA + NSF + IRA + ILS + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_MTG=glm(INS ~ DDA + NSF + IRA + ILS + MM + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+
+
+main_INV=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(CC) + 
              factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
              factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
-anova(main,main_r,test="LRT")
 
-summary(main)
+main_CC=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_DDABAL_Bin=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_CHECKS_Bin=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_TELLER_Bin=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_SAVBAL_Bin=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_ATMAMT_Bin=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_CDBAL_Bin=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) ,data = insurance_t_bin, family = binomial(link = "logit"))
 
 
+anova(main,main_DDA,test="LRT")[2,5]
+anova(main,main_NSF,test="LRT")[2,5]
+anova(main,main_IRA,test="LRT")[2,5]
+anova(main,main_ILS,test="LRT")[2,5]
+anova(main,main_MM,test="LRT")[2,5]
+anova(main,main_MTG,test="LRT")[2,5]
+anova(main,main_INV,test="LRT")[2,5]
+anova(main,main_CC,test="LRT")[2,5]
+anova(main,main_DDABAL_Bin,test="LRT")[2,5]
+anova(main,main_CHECKS_Bin,test="LRT")[2,5]
+anova(main,main_TELLER_Bin,test="LRT")[2,5]
+anova(main,main_SAVBAL_Bin,test="LRT")[2,5]
+anova(main,main_ATMAMT_Bin,test="LRT")[2,5]
+anova(main,main_CDBAL_Bin,test="LRT")[2,5]
+
+# Interaction
+main=glm(INS ~ DDA:IRA + DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+           factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+           factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+
+
+main_DDA=glm(INS ~  NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+               factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+               factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_NSF=glm(INS ~ DDA:IRA +DDA +  IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+               factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+               factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_IRA=glm(INS ~ DDA:IRA +DDA + NSF + ILS + MM + MTG + factor(INV) + factor(CC) + 
+               factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+               factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_ILS=glm(INS ~ DDA:IRA +DDA + NSF + IRA + MM + MTG + factor(INV) + factor(CC) + 
+               factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+               factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_MM=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MTG + factor(INV) + factor(CC) + 
+              factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+              factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_MTG=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + factor(INV) + factor(CC) + 
+               factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+               factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+
+
+main_INV=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(CC) + 
+               factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+               factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_CC=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + 
+              factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+              factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_DDABAL_Bin=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+                      factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+                      factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_CHECKS_Bin=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+                      factor(DDABAL_Bin) + factor(TELLER_Bin) + 
+                      factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_TELLER_Bin=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+                      factor(DDABAL_Bin) + factor(CHECKS_Bin) + 
+                      factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_SAVBAL_Bin=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+                      factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+                      factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_ATMAMT_Bin=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+                      factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+                      factor(SAVBAL_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_CDBAL_Bin=glm(INS ~ DDA:IRA +DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+                     factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+                     factor(SAVBAL_Bin) + factor(ATMAMT_Bin) ,data = insurance_t_bin, family = binomial(link = "logit"))
+
+main_DDAIRA=glm(INS ~ DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
+                     factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
+                     factor(SAVBAL_Bin) + factor(ATMAMT_Bin) ,data = insurance_t_bin, family = binomial(link = "logit"))
+
+
+anova(main,main_DDA,test="LRT")[2,5]
+anova(main,main_NSF,test="LRT")[2,5]
+anova(main,main_IRA,test="LRT")[2,5]
+anova(main,main_ILS,test="LRT")[2,5]
+anova(main,main_MM,test="LRT")[2,5]
+anova(main,main_MTG,test="LRT")[2,5]
+anova(main,main_INV,test="LRT")[2,5]
+anova(main,main_CC,test="LRT")[2,5]
+anova(main,main_DDABAL_Bin,test="LRT")[2,5]
+anova(main,main_CHECKS_Bin,test="LRT")[2,5]
+anova(main,main_TELLER_Bin,test="LRT")[2,5]
+anova(main,main_SAVBAL_Bin,test="LRT")[2,5]
+anova(main,main_ATMAMT_Bin,test="LRT")[2,5]
+anova(main,main_CDBAL_Bin,test="LRT")[2,5]
+anova(main,main_DDAIRA,test="LRT")[2,5]
