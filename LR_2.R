@@ -2,7 +2,6 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 
-
 # Step 0: Looking at missing pattern
 miss=na.omit(insurance_t_bin)
 
@@ -74,6 +73,12 @@ for (i in seq_along(insurance_t_bin)){
   print(colnames(insurance_t_bin)[i])
   print(table(insurance_t_bin[[i]],insurance_t_bin[["INS"]]))  
 }
+
+viz=insurance_t_bin %>%
+  select(INS,CASHBK,MMCRED)
+
+write.csv(viz,"/Users/shao/Desktop/HW/Homework2_LR/sep.csv", row.names = FALSE)
+
 # Step 2 wrapup: Two Way Table: CASHBK, MMCRED, CCPURC have complete or quasi-separation concerns
 
 
@@ -203,12 +208,12 @@ anova(main,main_SAVBAL_Bin,test="LRT")[2,5]
 anova(main,main_ATMAMT_Bin,test="LRT")[2,5]
 anova(main,main_CDBAL_Bin,test="LRT")[2,5]
 
-# Interaction
+# Final
 main=glm(INS ~ DDA:IRA + DDA + NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
            factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
            factor(SAVBAL_Bin) + factor(ATMAMT_Bin) + factor(CDBAL_Bin),data = insurance_t_bin, family = binomial(link = "logit"))
 
-
+summary(main)
 
 main_DDA=glm(INS ~  NSF + IRA + ILS + MM + MTG + factor(INV) + factor(CC) + 
                factor(DDABAL_Bin) + factor(CHECKS_Bin) + factor(TELLER_Bin) + 
