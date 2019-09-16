@@ -8,10 +8,12 @@ library(seasonal)
 library(tidyr)
 library(dplyr)
 library(imputeTS)
+library(lubridate)
 library(tidyverse)
 library(tsibble)
 library(lubridate)
 
+# Creation of Time Series Data Object #
 PM_2_5_Raleigh2$Date=as.Date(PM_2_5_Raleigh2$Date,format='%m/%d/%Y')
 ts <- seq.POSIXt(as.POSIXct("2014-01-01",'%m/%d/%y'), as.POSIXct("2018-12-31",'%m/%d/%y'), by="day")
 df <- data.frame(Date=ts)
@@ -21,20 +23,22 @@ pm <- full_join(df,PM_2_5_Raleigh2)
 hw=pm %>% group_by(month=floor_date(Date, "month")) %>%
   summarize(amount=mean(Daily.Mean.PM2.5.Concentration, na.rm=TRUE))
 
-
-# Creation of Time Series Data Object #
 ts <- ts(hw$amount, start = 2014, frequency =12)
 
-# Time Series Decomposition ...STL#
+
+
+
+# Time Series Decomposition
 
 #stl
 decomp_stl <- stl(ts, s.window = 7)
 
+
+# Ploting
 #get each element
 seasonal   <- decomp_stl$time.series[,1]
 trend	   <- decomp_stl$time.series[,2]
 remainder  <- decomp_stl$time.series[,3]
-
 
 trend=subset(trend,end=length(trend)-6)
 remainder=subset(remainder,end=length(remainder)-6)
@@ -46,7 +50,6 @@ lines(trend,col="blue")
 legend(x=2017.3,y=13,c("Actual","Trend"),cex=0.7,col=c("black","blue"),pch=c(1,1))
 
 
-
 plot(test, ylab="Particulate Matter",main="Particulate Matter with Predicted Values")
 #second use line to add another line on plot
 lines(predict,col="darkturquoise")
@@ -56,24 +59,7 @@ legend(x=2018.52,y=12.2,c("Actual","Predicted"),cex=0.7,col=c("black","darkturqu
 
 
 
-
-
-
-
-
-
-
-#overlaid plot
-#this might be seasonally adjusted I guess
-#first use plot
-plot(trend+remainder,
-     main="Widget Sales over Time, Seasonally Adjusted",
-     ylab="Sales (USD)")
-#second use line to add another line on plot
-lines(ts,col="green")
-
-
-
+# Modeling
 training=subset(ts,end=length(ts)-6)
 test=subset(ts,start=length(ts)-5)
 
@@ -87,17 +73,12 @@ print(MAPE)
 
 predict=SES[["mean"]]
 
-
-
 plot(test, ylab="Particulate Matter",main="Particulate Matter with Predicted Values")
 #second use line to add another line on plot
 lines(predict,col="darkturquoise")
 legend(x=2018.52,y=12.2,c("Actual","Predicted"),cex=0.7,col=c("black","darkturquoise"),pch=c(1,1))
 
 
-
-legend("bottomright", inset=.02,
-       c("real","predicted"), fill=c("black","darkturquoise"), horiz=TRUE, cex=0.8)
 
 # Building a Linear Exponential Smoothing Model
 LES <- holt(training, initial = "optimal", h = 6)
