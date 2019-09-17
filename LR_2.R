@@ -293,3 +293,30 @@ anova(main,main_SAVBAL_Bin,test="LRT")[2,5]
 anova(main,main_ATMAMT_Bin,test="LRT")[2,5]
 anova(main,main_CDBAL_Bin,test="LRT")[2,5]
 anova(main,main_DDAIRA,test="LRT")[2,5]
+
+
+
+#
+insurance_t=insurance_t$DDABAL 
+insurance_t_DDABAL=insurance_t_bin$DDABAL_Bin
+
+insurance_t =insurance_t%>%
+  sort()
+
+insurance_t_DDABAL =insurance_t_DDABAL%>%
+  sort()
+
+df_DDABAL <- data.frame(CAT=insurance_t_DDABAL, VAL=insurance_t, stringsAsFactors = FALSE)
+
+df_DDABAL_1 = df_DDABAL %>%
+  filter(CAT==1)
+summary(df_DDABAL_1)
+
+df_DDABAL_8 = df_DDABAL %>%
+  filter(CAT==8)
+summary(df_DDABAL_8)
+
+unique(insurance_t_bin$INV)
+
+
+
