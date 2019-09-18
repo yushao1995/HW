@@ -37,8 +37,6 @@ PseudoR2(logit.model, which = "Nagelkerke")
 # Brier Score #
 BrierScore(logit.model)
 
-bwt=data.frame()
-
 # Discrimination Slope #
 insurance_t_bin$p_hat <- predict(logit.model, type = "response")
 
@@ -77,6 +75,8 @@ for(i in 1:49){
 ctable <- data.frame(cutoff, sens, spec, youden)
 
 ctable
+write.csv(ctable,'/Users/shao/Desktop/HW/LR_3/ctable1.csv')
+
 
 # ROC Curve - InformationValue Package #
 plotROC(insurance_t_bin$INS, insurance_t_bin$p_hat)
@@ -105,7 +105,7 @@ for(i in 1:49){
 }
 
 ctable <- data.frame(cutoff, reca, prec, f1)
-
+write.csv(ctable,'/Users/shao/Desktop/HW/LR_3/ctable2.csv')
 ctable
 
 # Lift Chart #
