@@ -1,5 +1,4 @@
 # Needed Libraries for Analysis #
-
 library(MASS)
 library(car)
 library(DescTools)
@@ -7,9 +6,12 @@ library(ggplot2)
 library(ROCR)
 library(InformationValue)
 library(haven)
+library(dplyr)
+
 # Load Needed Data Sets #
 # Replace the ... below with the file location of the data sets #
 insurance_t_bin <- read_sas("~/Desktop/HW/Homework2_LR/insurance_t_bin.sas7bdat")
+insurance_v_bin <- read_sas("~/Desktop/HW/Homework2_LR/insurance_v_bin.sas7bdat")
 
 # Data Processing
 # Missing as catagory
@@ -18,8 +20,22 @@ insurance_t_bin[is.na(insurance_t_bin)] <- "Missing"
 insurance_t_bin$CASHBK[insurance_t_bin$CASHBK==2]=1
 table(insurance_t_bin[["CASHBK"]],insurance_t_bin[["INS"]])
 
-insurance_t_bin$MMCRED[insurance_t_bin$MMCRED==5]=3
+insurance_t_bin$MMCRED[insurance_t_bin$MMCRED==5]=2
+insurance_t_bin$MMCRED[insurance_t_bin$MMCRED==3]=2
 table(insurance_t_bin[["MMCRED"]],insurance_t_bin[["INS"]])
+
+# Data Processing for validation dataset
+# Missing as catagory
+insurance_v_bin[is.na(insurance_v_bin)] <- "Missing"
+# Quasi Seperation Recode
+insurance_v_bin$CASHBK[insurance_v_bin$CASHBK==2]=1
+table(insurance_v_bin[["CASHBK"]],insurance_v_bin[["INS"]])
+
+## We recode one more group
+insurance_v_bin$MMCRED[insurance_v_bin$MMCRED==5]=2
+insurance_v_bin$MMCRED[insurance_v_bin$MMCRED==3]=2
+table(insurance_v_bin[["MMCRED"]],insurance_v_bin[["INS"]])
+
 
 
 # Generalized R-squared #
@@ -57,26 +73,6 @@ Concordance(insurance_t_bin$INS, insurance_t_bin$p_hat)
 
 somersD(insurance_t_bin$INS, insurance_t_bin$p_hat)
 
-# Classification Table & Youden Index #
-confusionMatrix(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = 0.5)
-
-sens <- NULL
-spec <- NULL
-youden <- NULL
-cutoff <- NULL
-
-for(i in 1:49){
-     cutoff = c(cutoff, i/50)
-     sens <- c(sens, sensitivity(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
-     spec <- c(spec, specificity(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
-     youden <- c(youden, youdensIndex(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
-   }
-
-ctable <- data.frame(cutoff, sens, spec, youden)
-
-ctable
-write.csv(ctable,'/Users/shao/Desktop/HW/LR_3/ctable1.csv')
-
 
 # ROC Curve - InformationValue Package #
 plotROC(insurance_t_bin$INS, insurance_t_bin$p_hat)
@@ -91,29 +87,6 @@ abline(a = 0, b = 1, lty = 3)
 
 performance(pred, measure = "auc")@y.values
 
-# Precision, Recall, F1 #
-prec <- NULL
-reca <- NULL
-f1 <- NULL
-cutoff <- NULL
-
-for(i in 1:49){
-  cutoff = c(cutoff, i/50)
-  reca <- c(reca, sensitivity(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
-  prec <- c(prec, precision(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
-  f1 <- c(f1, 2*((prec[i]*reca[i])/(prec[i]+reca[i])))
-}
-
-ctable <- data.frame(cutoff, reca, prec, f1)
-write.csv(ctable,'/Users/shao/Desktop/HW/LR_3/ctable2.csv')
-ctable
-
-# Lift Chart #
-perf <- performance(pred, measure = "lift", x.measure = "rpp")
-plot(perf, lwd = 3, colorize = TRUE, colorkey = TRUE,
-     colorize.palette = rev(gray.colors(256)),
-     main = "Lift Chart for Training Data")
-abline(h = 1, lty = 3)
 
 # K-S Statistics #
 ks_plot(insurance_t_bin$INS, insurance_t_bin$p_hat)
@@ -130,3 +103,53 @@ plot(x = unlist(perf@alpha.values), y = (1-unlist(perf@y.values)),
      ylab = "Proportion",
      col = "red")
 lines(x = unlist(perf@alpha.values), y = (1-unlist(perf@x.values)), col = "blue")
+
+#Find the cutoff by youden table
+sens <- NULL
+spec <- NULL
+youden <- NULL
+cutoff <- NULL
+
+for(i in 1:49){
+  cutoff = c(cutoff, i/50)
+  sens <- c(sens, sensitivity(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
+  spec <- c(spec, specificity(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
+  youden <- c(youden, youdensIndex(insurance_t_bin$INS, insurance_t_bin$p_hat, threshold = i/50))
+}
+
+ctable <- data.frame(cutoff, sens, spec, youden)
+#0.3 as cutoff
+
+
+
+########### 
+## Fit Model on validation dataset
+insurance_v_bin$p_hat <- predict(logit.model, insurance_v_bin)
+
+p1 <- insurance_v_bin$p_hat[insurance_v_bin$INS == 1]
+p0 <- insurance_v_bin$p_hat[insurance_v_bin$INS == 0]
+coef_discrim <- mean(p1) - mean(p0)
+
+#Confusion Matrix
+confusionMatrix(insurance_v_bin$INS, insurance_v_bin$p_hat, threshold = 0.3)
+
+
+#Accuracy
+Test <- insurance_v_bin  %>% mutate(model_pred = 1*(p_hat > .3) + 0,
+                         actual = 1*(INS == 1) + 0)
+
+Test <- Test %>% mutate(accurate = 1*(model_pred == actual))
+sum(Test$accurate)/nrow(Test)
+#0.7123352
+
+
+
+#Lift
+pred <- prediction(insurance_v_bin$p_hat, factor(insurance_v_bin$INS))
+perf <- performance(pred, measure = "tpr", x.measure = "fpr")
+
+perf <- performance(pred, measure = "lift", x.measure = "rpp")
+plot(perf, lwd = 3, colorize = TRUE, colorkey = TRUE,
+     colorize.palette = rev(gray.colors(256)),
+     main = "Lift Chart for Validation Data")
+abline(h = 1, lty = 3)
