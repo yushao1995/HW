@@ -13,6 +13,13 @@ library(tidyverse)
 library(tsibble)
 library(lubridate)
 library(astsa)
+library(devtools)
+library(ggplot2)
+library(gridExtra)
+library(reshape2)
+library(tseries)
+library(urca)
+
 
 # Creation of Time Series Data Object #
 PM_2_5_Raleigh2$Date=as.Date(PM_2_5_Raleigh2$Date,format='%m/%d/%Y')
@@ -24,100 +31,69 @@ pm <- full_join(df,PM_2_5_Raleigh2)
 hw=pm %>% group_by(month=floor_date(Date, "month")) %>%
   summarize(amount=mean(Daily.Mean.PM2.5.Concentration, na.rm=TRUE))
 
+
+# ts: Basic ts object #
 ts <- ts(hw$amount, start = 2014, frequency =12)
 
 
-decomp_stl <- stl(ts, s.window = 7)
+# training: training set #
+# test: validation set #
+training=subset(ts,end=length(ts)-6)
+test=subset(ts,start=length(ts)-5)
+
+# Use STL decomposition to find patterns #
+decomp_stl <- stl(training, s.window = 7)
 plot(decomp_stl)
-
-
-# Tell whether has seasonal random walk and needs seasonal difference
-nsdiffs(ts)
-nsdiffs(ts,test="ch")
-
-# Fit Dummy
-Q = factor(cycle(ts))
-fit=lm(ts~Q)
-ts_s=predict(fit, type = "response")
-ts_s <- ts(ts_s, start = 2014, frequency =12)
-
-decomp_stl <- stl(ts_a, s.window = 7)
-plot(decomp_stl)
-
-trend	   <- decomp_stl$time.series[,2]
-trend
-ts_a=ts-ts_a-trend
-
-decomp_stl <- stl(ts_a, s.window = 7)
-plot(decomp_stl)
+# Find both season and trend component 
 
 
 
-#Trend edit version
-ts_1=subset(ts,end=length(ts)-17)
-ts_2=subset(ts,start=length(ts)-16)
+# Tell whether has seasonal random walk and needs seasonal difference #
+nsdiffs(training)
+nsdiffs(training,test="ch")
+# NO
 
-fit=lm(ts_1~time(ts_1))
-ts_1=predict(fit, type = "response")
-fit=lm(ts_2~time(ts_2))
-ts_2=predict(fit, type = "response")
-ts_t=c(ts_1, ts_2)
-ts_t <- ts(ts_t, start = 2014, frequency =12)
+# Fit Dummy #
+month <- seasonaldummy(training)
+model  <- tslm(training ~ month)
+tsdisplay(residuals(model))
+ts_r=residuals(model)
 
-ts_a=ts-ts_t-ts_s
+# Testing stationary #
+adf.test(ts_r, alternative = "stationary", k=0)
+adf.test(ts_r, alternative = "stationary", k=1)
+adf.test(ts_r, alternative = "stationary", k=2)
 
-decomp_stl <- stl(ts_a, s.window = 7)
-plot(decomp_stl)
+# Fit Trend #
+model  <- tslm(training ~ trend+month, lambda=1)
+tsdisplay(residuals(model))
+ts_r=residuals(model)
+forcast_ts <- forecast(model,data.frame(month=I(seasonaldummy(training,6))))$mean
 
+# Auto select #
+auto.arima(ts_r)
 
-#auto selection
-auto.arima(ts_a)
-auto.arima(ts)
+# Results #
+mod1<-sarima(ts_r, 1,0,0,1,0,0,12)
 
-#sarima function
-mod1<-sarima(ts_a, 1,0,0,0,0,1,12)
-mod1<-sarima(ts, 1,1,1,1,0,0,12)
+# Forcast #
+mod1 <- Arima(ts_r, order=c(1,0,0), seasonal=c(1,0,0), method="ML")
+forcast_r=forecast(mod1, h = 6)$mean
+forcast=forcast_ts+forcast_r
 
-#double check with the code provided by professor
-modle <- Arima(ts_a, order=c(1,0,0), seasonal=c(0,0,1),method="ML",)
-summary(modle)
-
-Acf(ts_a, main = "")$acf
-Pacf(ts_a, main = "")$acf
-Acf(modle$residuals, main = "")$acf
-Pacf(modle$residuals, main = "")$acf
-
-White.LB <- rep(NA, 10)
-for(i in 1:10){
-  White.LB[i] <- Box.test(modle$residuals, lag = i, type = "Ljung", fitdf = 2)$p.value
-}
-
-White.LB <- pmin(White.LB, 0.2)
-barplot(White.LB, main = "Ljung-Box Test P-values", ylab = "Probabilities", xlab = "Lags", ylim = c(0, 0.2))
-abline(h = 0.01, lty = "dashed", col = "black")
-abline(h = 0.05, lty = "dashed", col = "black")
+# visualization
+plot(test)
+plot(forcast)
+df=data.frame(Actual=as.matrix(test), date=as.yearmon(time(test)))
+df$Predicted=as.matrix(forcast)
 
 
 
-#
-modle <- Arima(ts, order=c(1,1,1), seasonal=c(1,0,0),method="ML",)
-summary(modle)
-
-Acf(ts_a, main = "")$acf
-Pacf(ts_a, main = "")$acf
-Acf(modle$residuals, main = "")$acf
-Pacf(modle$residuals, main = "")$acf
-
-White.LB <- rep(NA, 10)
-for(i in 1:10){
-  White.LB[i] <- Box.test(modle$residuals, lag = i, type = "Ljung", fitdf = 2)$p.value
-}
-
-White.LB <- pmin(White.LB, 0.2)
-barplot(White.LB, main = "Ljung-Box Test P-values", ylab = "Probabilities", xlab = "Lags", ylim = c(0, 0.2))
-abline(h = 0.01, lty = "dashed", col = "black")
-abline(h = 0.05, lty = "dashed", col = "black")
-
-
-
-
+ggplot()+
+  geom_line(data=df,aes(y=Actual,x= date,color="Actual"),size=1 )+
+  geom_line(data=df,aes(y=Predicted,x= date,color="Predicted"),size=1)+ 
+  scale_color_manual(values = c("Predicted" = "goldenrod1", "Actual" = "darkcyan"))+
+  scale_x_yearmon()+
+  labs(title =  'Prediction versus Actual in Validation Set',y = "Monthly Average PM2.5",x = "Year")+
+  theme_minimal(base_size = 10)+
+  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="bottom")
