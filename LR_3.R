@@ -61,12 +61,14 @@ p0 <- insurance_t_bin$p_hat[insurance_t_bin$INS == 0]
 coef_discrim <- mean(p1) - mean(p0)
 
 ggplot(insurance_t_bin, aes(p_hat, fill = factor(INS))) +
-  geom_density(alpha = 0.7) +
-  scale_fill_grey() +
+  scale_fill_manual(values=c("goldenrod1","darkcyan")) +
+  geom_histogram(alpha = 0.7)+
   labs(x = "Predicted Probability",
        fill = "Outcome",
        title = paste("Coefficient of Discrimination = ",
-                     round(coef_discrim, 3), sep = ""))
+                     round(coef_discrim, 3), sep = ""))+
+  theme_classic()+
+  theme(plot.title=element_text(hjust=0.5))
 
 # Rank-order Statistics #
 Concordance(insurance_t_bin$INS, insurance_t_bin$p_hat)
@@ -81,17 +83,17 @@ AUROC(insurance_t_bin$INS, insurance_t_bin$p_hat)
 # ROC Curve - ROCR Package #
 pred <- prediction(fitted(logit.model), factor(insurance_t_bin$INS))
 perf <- performance(pred, measure = "tpr", x.measure = "fpr")
-plot(perf, lwd = 3, colorize = TRUE, colorkey = TRUE,
-     colorize.palette = rev(gray.colors(256)))
-abline(a = 0, b = 1, lty = 3)
+
+
+plot(perf, lwd = 3,  col = "darkcyan")
+text(0.5, 0.5,"AUROC: 0.798")
+
+
 
 performance(pred, measure = "auc")@y.values
 
 
 # K-S Statistics #
-ks_plot(insurance_t_bin$INS, insurance_t_bin$p_hat)
-ks_stat(insurance_t_bin$INS, insurance_t_bin$p_hat)
-
 perf <- performance(pred, measure = "tpr", x.measure = "fpr")
 KS <- max(perf@y.values[[1]] - perf@x.values[[1]])
 cutoffAtKS <- unlist(perf@alpha.values)[which.max(perf@y.values[[1]] - perf@x.values[[1]])]
@@ -99,10 +101,13 @@ print(c(KS, cutoffAtKS))
 
 plot(x = unlist(perf@alpha.values), y = (1-unlist(perf@y.values)),
      type = "l", main = "K-S Plot (EDF)",
-     xlab = 'Cut-off',
+     xlab = 'Estimated Probability',
      ylab = "Proportion",
-     col = "red")
-lines(x = unlist(perf@alpha.values), y = (1-unlist(perf@x.values)), col = "blue")
+     col = "goldenrod1",
+     lwd=3)
+lines(x = unlist(perf@alpha.values), y = (1-unlist(perf@x.values)), col = "darkcyan",lwd=3)
+legend(0.75, 0.3, legend=c("0", "1"),col=c("goldenrod1","darkcyan"), lty=1,cex=1,lwd=3,title="Ourcome",text.font=4,box.lty=0)
+
 
 #Find the cutoff by youden table
 sens <- NULL
@@ -149,7 +154,10 @@ pred <- prediction(insurance_v_bin$p_hat, factor(insurance_v_bin$INS))
 perf <- performance(pred, measure = "tpr", x.measure = "fpr")
 
 perf <- performance(pred, measure = "lift", x.measure = "rpp")
-plot(perf, lwd = 3, colorize = TRUE, colorkey = TRUE,
-     colorize.palette = rev(gray.colors(256)),
-     main = "Lift Chart for Validation Data")
-abline(h = 1, lty = 3)
+
+plot(perf, lwd = 3, col = "darkcyan",main = "Lift Chart for Validation Data")
+
+
+
+
+
