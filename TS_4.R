@@ -11,7 +11,6 @@ library(imputeTS)
 library(lubridate)
 library(tidyverse)
 library(tsibble)
-library(lubridate)
 library(astsa)
 library(devtools)
 library(ggplot2)
@@ -55,8 +54,7 @@ nsdiffs(training,test="ch")
 # NO
 
 # Fit Dummy #
-month <- seasonaldummy(training)
-model  <- tslm(training ~ month)
+model  <- tslm(training ~ season)
 tsdisplay(residuals(model))
 ts_r=residuals(model)
 
@@ -69,11 +67,10 @@ adf.test(ts_r, alternative = "stationary", k=1)
 adf.test(ts_r, alternative = "stationary", k=2)
 
 # Fit Trend #
-model  <- tslm(training ~ trend+I(trend^2)+season)
+model  <- tslm(training ~ season + trend + I(trend^2))
 tsdisplay(residuals(model))
 ts_r=residuals(model)
-forcast_ts <- forecast(model,data.frame(month=I(seasonaldummy(training,6))))$mean
-forcast_ts <- forecast(model,h=6,level = 0)$mean
+forcast_ts <- forecast(model,h=6)$mean
 
 
 
@@ -81,10 +78,10 @@ forcast_ts <- forecast(model,h=6,level = 0)$mean
 auto.arima(ts_r)
 
 # Results #
-mod1<-sarima(ts_r, 1,0,0,0,0,0,12)
+mod1<-sarima(ts_r, 1,0,0,1,0,0,12)
 
 # Forcast #
-mod1 <- Arima(ts_r, order=c(1,0,0), seasonal=c(0,0,0), method="ML")
+mod1 <- Arima(ts_r, order=c(1,0,0), seasonal=c(1,0,0), method="ML")
 forcast_r=forecast(mod1, h = 6)$mean
 forcast=forcast_ts+forcast_r
 
@@ -95,21 +92,20 @@ df=data.frame(Actual=as.matrix(test), date=as.yearmon(time(test)))
 df$Predicted=as.matrix(forcast)
 
 
-
 ggplot()+
   geom_line(data=df,aes(y=Actual,x= date,color="Actual"),size=1 )+
   geom_line(data=df,aes(y=Predicted,x= date,color="Predicted"),size=1)+ 
   scale_color_manual(values = c("Predicted" = "goldenrod1", "Actual" = "darkcyan"))+
   scale_x_yearmon()+
-  labs(title =  'Prediction versus Actual in Validation Set',y = "Monthly Average PM2.5",x = "Year")+
+  labs(title =  'Prediction versus Actual in Validation Set',y = "Average Monthly PM2.5",x = "Year")+
   theme_minimal(base_size = 10)+
-  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="bottom",text = element_text(size=12))
+  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="top",text = element_text(size=12))
+
 
 error=df$Actual-df$Predicted
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(test))
 print(MAPE)
-
 
 
 #visualization
@@ -121,9 +117,9 @@ ggplot()+
   geom_line(data=df,aes(y=Seasonal,x= date,color="Seasonal Component"),size=1 )+
   scale_color_manual(values = c("Seasonal Component" = "coral3"))+
   scale_x_yearmon()+
-  labs(title =  'Prediction versus Actual in Validation Set',y = "Monthly Average PM2.5",x = "Time (Month-Year)")+
+  labs(title =  'Prediction versus Actual in Validation Set',y = "Average Monthly PM2.5",x = "Time (Month-Year)")+
   theme_minimal(base_size = 10)+
-  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="bottom",text = element_text(size=12,family="sans"))
+  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="top",text = element_text(size=12,family="sans"))
 
 #forecasting
 #import forecast_csv
@@ -135,9 +131,9 @@ ggplot()+
   geom_line(data=df,aes(y=Predicted,x= date,color="Forecasted"),size=1)+ 
   scale_color_manual(values = c("Forecasted" = "goldenrod1", "Actual" = "darkcyan"))+
   scale_x_yearmon()+
-  labs(title =  'Prediction versus Actual in Validation Set',y = "Monthly Average PM2.5",x = "Time (Month-Year)")+
+  labs(title =  'Prediction versus Actual in Validation Set',y = "Average Monthly PM2.5",x = "Time (Month-Year)")+
   theme_minimal(base_size = 10)+
-  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="bottom",text = element_text(size=12,family="sans"))
+  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="top",text = element_text(size=12,family="sans"))
 
 
 #trend fitting
@@ -151,7 +147,7 @@ ggplot()+
   geom_line(data=df,aes(y=Residuals,x= date,color="Residuals (after removing seasonality)"),size=1)+ 
   scale_color_manual(values = c("Trend" = "#1995AD", "Residuals (after removing seasonality)" = "#A1D6E2"))+
   scale_x_yearmon()+
-  labs(title =  'Prediction versus Actual in Validation Set',y = "Monthly Average PM2.5",x = "Time (Month-Year)")+
+  labs(title =  'Prediction versus Actual in Validation Set',y = "Average Monthly PM2.5",x = "Time (Month-Year)")+
   theme_minimal(base_size = 10)+
-  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="bottom",text = element_text(size=12,family="sans"))
+  theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust= 0.5),legend.title=element_blank(),legend.position="top",text = element_text(size=12,family="sans"))
 
